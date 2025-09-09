@@ -10,10 +10,10 @@
   @if(isset($umkms) && count($umkms))
     @foreach($umkms as $x)
       @include('components.card', [
-        'nama' => $x['nama'] ?? null,
-        'deskripsi' => $x['deskripsi'] ?? null,
-        'kategori' => $x['kategori'] ?? null,
-        'slug' => $x['slug'] ?? null
+      'nama'      => $x->nama,
+      'deskripsi' => $x->deskripsi,
+      'kategori'  => $x->kategori,
+      'link'      => route('umkm.show', $x->id),
       ])
     @endforeach
   @else
