@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +9,7 @@ class Umkm extends Model
     use HasFactory;
 
     protected $fillable = [
-        'slug','nama','kategori','kota','telepon','gambar','deskripsi'
+        'nama','kategori','kota','deskripsi','gambar',
+        'alamat','kontak','website','instagram'
     ];
 }

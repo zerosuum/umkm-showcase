@@ -12,29 +12,61 @@ class UmkmController extends Controller
     {
         $umkms = DB::table('umkms')
             ->orderByDesc('created_at')
-            ->limit(3)
+            ->limit(5)
             ->get();
 
         return view('home', compact('umkms'));
     }
-
-    // List
     public function index(Request $request)
-    {
-        $q = $request->query('q');
-        $query = DB::table('umkms')->orderByDesc('created_at');
+{
+    $q = $request->query('q');
 
-        if ($q) {
-            $query->where(function ($w) use ($q) {
-                $w->where('nama', 'like', "%$q%")
-                  ->orWhere('kategori', 'like', "%$q%")
-                  ->orWhere('kota', 'like', "%$q%");
-            });
-        }
+    // daftar kategori untuk dropdown
+    $kategoris = DB::table('umkms')
+        ->select('kategori')
+        ->whereNotNull('kategori')
+        ->distinct()
+        ->orderBy('kategori')
+        ->pluck('kategori');
 
-        $umkms = $query->paginate(10)->withQueryString();
-        return view('umkm.index', compact('umkms', 'q'));
+    $kategori = $request->query('kategori'); // nilai terpilih
+
+    $query = DB::table('umkms');
+
+    // filter teks (sudah ada)
+    if ($q) {
+        $query->where(function ($w) use ($q) {
+            $w->where('nama', 'like', "%$q%")
+              ->orWhere('kategori', 'like', "%$q%")
+              ->orWhere('kota', 'like', "%$q%");
+        });
     }
+
+    // [BARU] filter kategori (map dari "penulis" di soal buku)
+    if ($kategori && $kategori !== '___SEMUA___') {
+        $query->where('kategori', $kategori);
+    }
+
+    $umkms = $query->orderByDesc('created_at')
+                   ->paginate(10)
+                   ->withQueryString();
+
+    // Statistik
+$stat_total          = DB::table('umkms')->count();
+$stat_punya_website  = DB::table('umkms')->whereNotNull('website')->count();
+$stat_kategori_top   = DB::table('umkms')
+    ->select('kategori', DB::raw('COUNT(*) as c'))
+    ->groupBy('kategori')
+    ->orderByDesc('c')
+    ->first();
+$stat_terbaru        = DB::table('umkms')->orderByDesc('created_at')->first();
+
+return view('umkm.index', compact(
+    'umkms','q','kategoris','kategori',
+    'stat_total','stat_punya_website','stat_kategori_top','stat_terbaru'
+));
+
+}
 
     public function create()
     {
